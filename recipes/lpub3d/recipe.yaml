@@ -74,20 +74,17 @@ requirements:
 
 tests:
   - script:
-    - if: win
-      then:
-        - if not exist %LIBRARY_PREFIX%\bin\lpub3d.exe (exit 1)
-        - if not exist %LIBRARY_PREFIX%\bin\3rdparty\ldglite-1.3\bin\ldglite.exe (exit 1)
-        - if not exist %LIBRARY_PREFIX%\bin\3rdparty\ldview-4.5\bin\ldview64.exe (exit 1)
-        - if not exist %LIBRARY_PREFIX%\bin\3rdparty\lpub3d_trace_cui-3.8\bin\lpub3d_trace_cui64.exe (exit 1)
+    - ${{ 'test.bat' if win }}
 
     files:
       source:
         - ${{ lp3d_name }}/builds/check/
       recipe:
-        - if: win
-          then:
-            - test.bat
+        - ${{ 'test.bat' if win }}
+
+    requirements:
+      run:
+        - ${{ '7zip' if win }}
 
     requirements:
       run:

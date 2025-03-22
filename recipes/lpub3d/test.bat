@@ -72,6 +72,11 @@ IF NOT EXIST "%USERPROFILE%\LDraw" (
   )
 )
 
+ECHO - Running package content test test...
+IF NOT EXIST %LIBRARY_PREFIX%\bin\lpub3d.exe (GOTO :ERROR_END)
+IF NOT EXIST %LIBRARY_PREFIX%\bin\3rdparty\ldglite-1.3\bin\ldglite.exe (GOTO :ERROR_END)
+IF NOT EXIST %LIBRARY_PREFIX%\bin\3rdparty\ldview-4.5\bin\ldview64.exe (GOTO :ERROR_END)
+IF NOT EXIST %LIBRARY_PREFIX%\bin\3rdparty\lpub3d_trace_cui-3.8\bin\lpub3d_trace_cui64.exe (GOTO :ERROR_END)
 ECHO - Running Conda-build test...
 ECHO - Test command: %LP3D_TEST_COMMAND%
 CALL %LP3D_TEST_COMMAND%
