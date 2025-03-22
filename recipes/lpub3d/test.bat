@@ -1,0 +1,96 @@
+
+@ECHO OFF &SETLOCAL
+
+Title LPub3D Conda-build Test Script
+
+REM This script uses Conda-build to perform the LPub3D for Windows build check.
+REM The primary purpose is to setup the 64bit build check environment to
+REM successfully run the LPub3D build_checks.bat which will perform the
+REM standard LPub3D build checks.
+REM --
+REM  Trevor SANDY <trevor.sandy@gmail.com>
+REM  Last Update: March 22, 2025
+REM  Copyright (C) 2023 - 2025 by Trevor SANDY
+REM --
+REM This script is distributed in the hope that it will be useful,
+REM but WITHOUT ANY WARRANTY; without even the implied warranty of
+REM MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+SET "LP3D_APP=lpub3d"
+SET "PACKAGE=LPub3D"
+SET "CONFIGURATION=release"
+SET "ABS_WD=%CD%\%LP3D_APP%"
+SET "LDRAW_LIBS_ARCHIVE=%LIBRARY_PREFIX%\bin\extras\complete.zip"
+SET "LDRAW_LIBS_DIR=lpub3d_windows_3rdparty"
+SET "LDRAWDIR=%LDRAW_LIBS_DIR%\LDraw"
+SET "LDRAW_LIBS=%CD%\%LDRAW_LIBS_DIR%"
+SET "LOCALAPPDATA=%USERPROFILE%\AppData\Local"
+
+SET "LP3D_CONDA_TEST=True"
+SET "LP3D_7ZIP_WIN64=7z.exe"
+SET "LP3D_TEST_COMMAND=.\%LP3D_APP%\builds\check\build_checks.bat"
+
+IF NOT EXIST "%LP3D_APP%\builds\check" (
+  ECHO - ERROR - Test assets %LP3D_APP%\builds\check not found.
+  GOTO :ERROR_END
+)
+
+ECHO - Setup LDraw parts library...
+
+IF NOT EXIST "%LDRAW_LIBS_DIR%" (
+  MKDIR "%LDRAW_LIBS_DIR%" >NUL 2>&1
+  IF NOT EXIST "%LDRAW_LIBS_DIR%" (
+    ECHO - ERROR - Create %LDRAW_LIBS_DIR% failed.
+    GOTO :ERROR_END
+  )
+)
+
+IF NOT EXIST "%LDRAW_LIBS_DIR%\LDraw" (
+  IF NOT EXIST "%LDRAW_LIBS_ARCHIVE%" (
+    ECHO - ERROR - Parts library complete.zip was not found at %LDRAW_LIBS_ARCHIVE%.
+    GOTO :ERROR_END
+  ) ELSE (
+    PUSHD %LDRAW_LIBS_DIR%
+      7z.exe x -y "%LDRAW_LIBS_ARCHIVE%" >NUL 2>&1
+    POPD
+    IF NOT EXIST "%LDRAW_LIBS_DIR%\LDraw\parts" (
+      ECHO - ERROR - Parts library complete.zip was not extracted.
+      GOTO :ERROR_END
+    )
+  )
+)
+
+IF NOT EXIST "%USERPROFILE%\LDraw" (
+  PUSHD %USERPROFILE%
+  MKLINK /d LDraw %LDRAW_LIBS_DIR%\LDraw >NUL 2>&1
+  POPD
+  IF NOT EXIST "%USERPROFILE%\LDraw" (
+    ECHO - ERROR - Create %USERPROFILE%\LDraw link failed.
+    GOTO :ERROR_END
+  ) ELSE (
+    SET "CREATED_LDRAW_DIR=True"
+  )
+)
+
+ECHO - Running Conda-build test...
+ECHO - Test command: %LP3D_TEST_COMMAND%
+CALL %LP3D_TEST_COMMAND%
+IF NOT ERRORLEVEL 0 GOTO :ERROR_END
+CALL :CLEANUP_LDRAW_DIR
+ECHO - Conda-build test finished.
+ENDLOCAL
+EXIT /b
+
+:CLEANUP_LDRAW_DIR
+IF "%CREATED_LDRAW_DIR%" EQU "True" (
+  PUSHD %USERPROFILE%
+  RMDIR /S /Q LDraw >NUL 2>&1
+  POPD
+)
+EXIT /b
+
+:ERROR_END
+CALL :CLEANUP_LDRAW_DIR
+ECHO - Conda-build test FAILED!
+ENDLOCAL
+EXIT /b 1
