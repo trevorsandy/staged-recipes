@@ -76,16 +76,11 @@ tests:
   - script:
     - if: win
       then:
-        - IF NOT EXIST %LIBRARY_PREFIX%\bin\3rdparty\ldglite-1.3\bin\ldglite.exe (EXIT 1)
-        - IF NOT EXIST %LIBRARY_PREFIX%\bin\lpub3d.exe (EXIT 1)
-        - IF NOT EXIST %LIBRARY_PREFIX%\bin\3rdparty\lpub3d_trace_cui-3.8\bin\lpub3d_trace_cui64.exe (EXIT 1)
-        - IF NOT EXIST %LIBRARY_PREFIX%\bin\3rdparty\ldview-4.5\bin\ldview64.exe (EXIT 1)
-        - CALL test.bat
-    requirements:
-      run:
-        - if: win
-          then:
-            - 7zip
+        - if not exist %LIBRARY_PREFIX%\bin\lpub3d.exe (exit 1)
+        - if not exist %LIBRARY_PREFIX%\bin\3rdparty\ldglite-1.3\bin\ldglite.exe (exit 1)
+        - if not exist %LIBRARY_PREFIX%\bin\3rdparty\ldview-4.5\bin\ldview64.exe (exit 1)
+        - if not exist %LIBRARY_PREFIX%\bin\3rdparty\lpub3d_trace_cui-3.8\bin\lpub3d_trace_cui64.exe (exit 1)
+
     files:
       source:
         - ${{ lp3d_name }}/builds/check/
@@ -93,6 +88,12 @@ tests:
         - if: win
           then:
             - test.bat
+
+    requirements:
+      run:
+        - if: win
+          then:
+            - 7zip
 
 about:
   homepage: https://trevorsandy.github.io/lpub3d
